@@ -1,7 +1,8 @@
 from databases import Database
 from sqlalchemy import create_engine, MetaData, Table, Column, Integer, String, Float
+from dotenv import load_dotenv
 
-from ..settings import DB_URL
+secret = os.getenv("POSTGRES_CONN")
 
 
 database = Database(DB_URL)
