@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from typing import List
 from pydantic import BaseModel
-from .postgres_db import books, database
+from postgres_db import books, database
 
 app = FastAPI()
 
