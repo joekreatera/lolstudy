@@ -1,0 +1,30 @@
+@import 'tailwindcss';
+
+/*
+ * Dark match-analysis theme tokens.
+ *
+ * "abyss" is the app's dark blue-gray surface scale (darkest → lightest):
+ *   abyss-950  page background
+ *   abyss-900  primary panel
+ *   abyss-850  raised inner row / stat cluster
+ *   abyss-800  nested surface / chips
+ *   abyss-700  borders
+ *   abyss-600  stronger border / hover
+ *
+ * Text uses Tailwind's built-in slate scale (slate-100 primary, slate-300
+ * body, slate-400 secondary). Team accents: blue-400 / red-400, used only for
+ * small dots, frames, markers, and selected states — never as large fills.
+ * All text colors chosen for >= AA contrast on abyss-900 / abyss-850 panels.
+ */
+@theme {
+  --color-abyss-950: #0b111c;
+  --color-abyss-900: #121a29;
+  --color-abyss-850: #161f30;
+  --color-abyss-800: #1b2537;
+  --color-abyss-700: #283349;
+  --color-abyss-600: #33415b;
+}
+
+html {
+  background-color: var(--color-abyss-950);
+}

@@ -1,0 +1,21 @@
+# This repository is authored on Windows (core.autocrlf=true) and deployed to
+# Linux. Without these rules, CRLF could be committed into the built frontend
+# or the dataset, which are shipped through Git rather than rebuilt on the
+# 512 MB droplet.
+#
+# Later lines win.
+
+# Default: normalize to LF in the repository and check out LF everywhere.
+* text=auto eol=lf
+
+# Binary assets: never touched.
+*.png binary
+*.ico binary
+*.woff  binary
+*.woff2 binary
+
+# Build output and data files are shipped byte-for-byte. `-text` disables all
+# end-of-line conversion so what is served is exactly what was built.
+frontend/dist/** -text
+dataset/survey_cases.json -text
+frontend/public/survey_cases.json -text

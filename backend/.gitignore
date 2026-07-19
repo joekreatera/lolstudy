@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Environment
+.env
+
+# PRIVATE research data. The outcome artifact is the answer key: committing it,
+# or letting it reach a static root, would hand participants the answers.
+# It is an import input only - after `scripts/import_case_outcomes.py` runs,
+# PostgreSQL is the sole runtime source and this file should be deleted.
+# `data/*` rather than `data/`: git cannot re-include a file inside an ignored
+# directory, so the negation below only works if the directory itself is not
+# ignored.
+data/*
+!data/.gitkeep
+
+# Research exports contain participant responses.
+exports/

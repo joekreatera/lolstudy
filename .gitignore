@@ -1,0 +1,95 @@
+# =============================================================================
+# lolstudy - deployment repository for lol-predictor-survey
+#
+# This is a DEPLOYMENT repository. It intentionally tracks two things a normal
+# source repository would ignore:
+#
+#   - frontend/dist        the built frontend, because the 512 MB droplet
+#                          cannot run a Vite build. It is built locally and
+#                          shipped through Git.
+#   - the survey dataset   because the build and the served site both need it.
+#
+# Both exceptions are asserted explicitly at the bottom of this file.
+# =============================================================================
+
+# --- Secrets --------------------------------------------------------------
+# Never commit a real environment file. `.env.example` is a template with no
+# real values and is deliberately re-included below.
+.env
+.env.*
+!.env.example
+
+# --- Private research data ------------------------------------------------
+# The outcome artifact is the answer key. Committing it, or letting it reach a
+# static root, would hand participants the answers. It is an import input only:
+# after `backend/scripts/import_case_outcomes.py` runs, PostgreSQL is the sole
+# runtime source and the file should be shredded from the server.
+#
+# `backend/data/*` rather than `backend/data/`: Git cannot re-include a file
+# inside an ignored directory, so the .gitkeep negation only works if the
+# directory itself is not ignored.
+backend/data/*
+!backend/data/.gitkeep
+case_outcomes.json
+
+# Research exports contain participant responses.
+backend/exports/
+exports/
+*.csv
+
+# PostgreSQL dumps and backups.
+*.sql
+*.dump
+*.sql.gz
+*.backup
+backups/
+
+# --- Python ---------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+ENV/
+*.egg-info/
+.mypy_cache/
+.ruff_cache/
+
+# --- Test caches ----------------------------------------------------------
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# --- Node / frontend ------------------------------------------------------
+node_modules/
+*.tsbuildinfo
+dist-ssr/
+*.local
+
+# --- Editor / OS ----------------------------------------------------------
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+.claude/
+
+# =============================================================================
+# Deployment exceptions - these MUST stay tracked.
+#
+# The leading `!` re-includes them in case a broader rule above (or a future
+# edit) would otherwise sweep them up.
+# =============================================================================
+
+# The built frontend that Nginx serves from
+# /home/deployer/lolstudy/frontend/dist.
+!frontend/dist/
+!frontend/dist/**
+
+# The public survey dataset. Label-free by construction: it carries no winner,
+# no outcome, and no Riot match ID. Verified by the winner-leak scan before
+# every commit.
+!dataset/survey_cases.json
+!frontend/public/survey_cases.json
