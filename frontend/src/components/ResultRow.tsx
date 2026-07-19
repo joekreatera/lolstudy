@@ -12,7 +12,7 @@
  * has one screen-reader sentence so it stands on its own out of context.
  */
 
-import { finishedContent, winnerOptions } from '../content.ts';
+import { useContent } from '../i18n/context.ts';
 import type { PredictedWinner, QuestionResult } from '../types/submission.ts';
 
 interface ResultRowProps {
@@ -20,9 +20,6 @@ interface ResultRowProps {
   /** Cutoff minute for this case, joined locally from the selected cases. */
   cutoffMinute?: number;
 }
-
-const teamLabel = (team: PredictedWinner) =>
-  winnerOptions.find((o) => o.value === team)?.label ?? team;
 
 const teamClass = (team: PredictedWinner) =>
   team === 'blue' ? 'text-sky-300' : 'text-rose-300';
@@ -49,7 +46,13 @@ function StatusIcon({ correct }: { correct: boolean }) {
 }
 
 export default function ResultRow({ result, cutoffMinute }: ResultRowProps) {
+  const content = useContent();
+  const finishedContent = content.finished;
   const { question_order, predicted_winner, winning_team, correct } = result;
+
+  // Display only: the API's `blue`/`red` values are looked up, never rewritten.
+  const teamLabel = (team: PredictedWinner) =>
+    content.survey.winnerLabels[team];
 
   const status = correct
     ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-300'

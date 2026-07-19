@@ -1,4 +1,5 @@
-import { finishedContent, CASES_PER_PARTICIPANT } from '../content.ts';
+import { CASES_PER_PARTICIPANT } from '../content/index.ts';
+import { useContent } from '../i18n/context.ts';
 import type { SurveyCase } from '../types/dataset.ts';
 import type { SurveySubmission } from '../types/submission.ts';
 import type { ResultState } from '../App.tsx';
@@ -25,6 +26,7 @@ export default function FinishedStep({
   onRetry,
   onDevReset,
 }: FinishedStepProps) {
+  const finishedContent = useContent().finished;
   const answerCount = submission?.answers.length ?? 0;
   const complete =
     submission !== null &&

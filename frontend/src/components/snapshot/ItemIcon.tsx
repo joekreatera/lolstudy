@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { itemIconUrl } from '../../services/assets.ts';
+import { useContent } from '../../i18n/context.ts';
 import type { ItemEntry } from '../../types/dataset.ts';
 
 interface ItemIconProps {
@@ -13,9 +14,15 @@ interface ItemIconProps {
  * neutral gray block, never a broken-image icon.
  */
 export default function ItemIcon({ item, version }: ItemIconProps) {
+  const snapshotContent = useContent().snapshot;
   const [failed, setFailed] = useState(false);
 
-  const label = `${item.name} (${item.gold_total.toLocaleString('en-US')} g)`;
+  // `item.name` is a dataset value and is never translated; only the gold
+  // suffix around it is. Grouping stays en-US so the figure reads identically
+  // to every other number in the snapshot.
+  const label =
+    `${item.name} (${item.gold_total.toLocaleString('en-US')} ` +
+    `${snapshotContent.itemGoldSuffix})`;
 
   return (
     <span className="relative inline-block" title={label}>

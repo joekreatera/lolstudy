@@ -2,7 +2,7 @@ import ChampionIcon from './ChampionIcon.tsx';
 import ItemTray from './ItemTray.tsx';
 import RankEmblem from './RankEmblem.tsx';
 import { text } from './typography.ts';
-import { snapshotContent } from '../../content.ts';
+import { useContent } from '../../i18n/context.ts';
 import { championDisplayName } from '../../services/assets.ts';
 import {
   formatNumber,
@@ -29,6 +29,8 @@ interface PlayerCardProps {
  * with identical dimensions. Champion image errors are handled by ChampionIcon.
  */
 export default function PlayerCard({ player, version, side }: PlayerCardProps) {
+  const snapshotContent = useContent().snapshot;
+  const rankLabels = snapshotContent.rank;
   const isBlue = side === 'blue';
   /* Mirroring is a `sm`-and-up affair. Stacked on a phone, a right-aligned Red
      card under a left-aligned Blue one makes the eye zig-zag down the column,
@@ -74,7 +76,10 @@ export default function PlayerCard({ player, version, side }: PlayerCardProps) {
       </p>
       <p className="text-sm font-semibold text-slate-100 tabular-nums">
         {player.kills} / {player.deaths} / {player.assists}
-        <span className="sr-only"> kills, deaths, assists</span>
+        <span className="sr-only">
+          {' '}
+          {snapshotContent.metrics.kdaInlineSrLabel}
+        </span>
       </p>
       {/* Wraps rather than overflowing: Gold and CS together need ~122px, and
           a narrow card must be free to put CS on a second line instead of
@@ -83,13 +88,15 @@ export default function PlayerCard({ player, version, side }: PlayerCardProps) {
         className={`mt-1 flex flex-wrap items-baseline gap-x-3 gap-y-0.5 ${justify}`}
       >
         <span className="flex items-baseline gap-1">
-          <span className={text.metricLabel}>Gold</span>
+          <span className={text.metricLabel}>
+            {snapshotContent.metrics.gold}
+          </span>
           <span className="text-sm font-semibold text-slate-100 tabular-nums">
             {formatNumber(player.gold)}
           </span>
         </span>
         <span className="flex items-baseline gap-1">
-          <span className={text.metricLabel}>CS</span>
+          <span className={text.metricLabel}>{snapshotContent.metrics.cs}</span>
           <span className="text-sm font-semibold text-slate-100 tabular-nums">
             {formatNumber(player.cs)}
           </span>
@@ -120,7 +127,7 @@ export default function PlayerCard({ player, version, side }: PlayerCardProps) {
       <div className="mt-1 space-y-0.5">
         {RANK_QUEUES.map((queue) => {
           const queueRank = player.rank.available ? player.rank[queue] : null;
-          const record = formatQueueRecord(queueRank);
+          const record = formatQueueRecord(queueRank, rankLabels);
           return (
             <div
               key={queue}
@@ -134,7 +141,7 @@ export default function PlayerCard({ player, version, side }: PlayerCardProps) {
                   {formatQueueLabel(queue)}
                 </span>{' '}
                 <span className="tabular-nums">
-                  {formatQueueStanding(player.rank, queue)}
+                  {formatQueueStanding(player.rank, queue, rankLabels)}
                 </span>
                 {/* Standing and record are one sentence on desktop, but together
                     they run past a phone's width and wrap at whatever word

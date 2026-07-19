@@ -24,10 +24,18 @@ import {
   formatQueueRecord,
   formatQueueStanding,
 } from '../src/services/format.ts';
+import { CONTENT } from '../src/content/index.ts';
 import { ROLE_ORDER } from '../src/types/dataset.ts';
 import type { SurveyCase } from '../src/types/dataset.ts';
 
 const here = dirname(fileURLToPath(import.meta.url));
+
+/**
+ * The rank helpers take their wording from the active language bundle. These
+ * checks assert the English rendering, so they pass English explicitly — the
+ * expected strings below are unchanged from before localization.
+ */
+const EN_RANK = CONTENT.en.snapshot.rank;
 const datasetPath = resolve(here, '..', '..', 'dataset', 'survey_cases.json');
 
 let passed = 0;
@@ -123,8 +131,8 @@ function buildRenderModel(surveyCase: SurveyCase): unknown {
           rank: p.rank,
           rank_rows: (['solo_duo', 'flex'] as const).map((q) => ({
             queue: q,
-            standing: formatQueueStanding(p.rank, q),
-            record: p.rank.available ? formatQueueRecord(p.rank[q]) : null,
+            standing: formatQueueStanding(p.rank, q, EN_RANK),
+            record: p.rank.available ? formatQueueRecord(p.rank[q], EN_RANK) : null,
           })),
         };
       }),
@@ -345,9 +353,9 @@ console.log('\nparticipant rank (queue-aware experimental input):');
       }
 
       for (const q of ['solo_duo', 'flex'] as const) {
-        if (formatQueueStanding(r, q).trim() === '') emptyRowText++;
+        if (formatQueueStanding(r, q, EN_RANK).trim() === '') emptyRowText++;
         const queueRank = r.available ? r[q] : null;
-        if (!queueRank && formatQueueRecord(queueRank) !== null)
+        if (!queueRank && formatQueueRecord(queueRank, EN_RANK) !== null)
           fabricatedRecord++;
       }
     }
@@ -431,43 +439,45 @@ console.log('\nparticipant rank (queue-aware experimental input):');
   };
   check(
     'formatQueueRank renders a normal tier with LP',
-    formatQueueRank(emerald) === 'Emerald IV · 85 LP'
+    formatQueueRank(emerald, EN_RANK) === 'Emerald IV · 85 LP'
   );
   check(
     'formatQueueRank renders apex without division, grouping 4-digit LP',
-    formatQueueRank(challenger) === 'Challenger · 3,155 LP'
+    formatQueueRank(challenger, EN_RANK) === 'Challenger · 3,155 LP'
   );
   check(
     'formatQueueRank renders an absent queue as Unranked',
-    formatQueueRank(null) === 'Unranked'
+    formatQueueRank(null, EN_RANK) === 'Unranked'
   );
   check(
     'formatQueueRecord renders raw wins and losses',
-    formatQueueRecord(emerald) === 'W: 123 · L: 98'
+    formatQueueRecord(emerald, EN_RANK) === 'W: 123 · L: 98'
   );
   check(
     'formatQueueRecord groups thousands',
-    formatQueueRecord(challenger) === 'W: 1,050 · L: 1,002'
+    formatQueueRecord(challenger, EN_RANK) === 'W: 1,050 · L: 1,002'
   );
   check(
     'formatQueueRecord returns null for an absent queue',
-    formatQueueRecord(null) === null
+    formatQueueRecord(null, EN_RANK) === null
   );
   check(
     'unavailable rank renders "Rank unavailable" on both rows',
-    formatQueueStanding({ available: false }, 'solo_duo') ===
+    formatQueueStanding({ available: false }, 'solo_duo', EN_RANK) ===
       'Rank unavailable' &&
-      formatQueueStanding({ available: false }, 'flex') === 'Rank unavailable'
+      formatQueueStanding({ available: false }, 'flex', EN_RANK) === 'Rank unavailable'
   );
   check(
     'a flex-only player keeps Flex and reads Unranked in Solo/Duo',
     formatQueueStanding(
       { available: true, solo_duo: null, flex: emerald },
-      'solo_duo'
+      'solo_duo',
+      EN_RANK
     ) === 'Unranked' &&
       formatQueueStanding(
         { available: true, solo_duo: null, flex: emerald },
-        'flex'
+        'flex',
+        EN_RANK
       ) === 'Emerald IV · 85 LP'
   );
   check(

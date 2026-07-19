@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { snapshotContent } from '../../content.ts';
+import { useContent } from '../../i18n/context.ts';
 import { minimapUrl } from '../../services/assets.ts';
 import type { SnapshotEvent, KillEvent } from '../../types/dataset.ts';
 
@@ -15,6 +15,7 @@ interface KillMapProps {
  * plus color, never color alone. No density/heat/region computation.
  */
 export default function KillMap({ events, version }: KillMapProps) {
+  const snapshotContent = useContent().snapshot;
   const [mapFailed, setMapFailed] = useState(false);
 
   const kills = events.filter(

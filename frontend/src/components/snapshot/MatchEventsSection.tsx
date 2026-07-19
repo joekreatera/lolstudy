@@ -3,7 +3,7 @@ import KillMap from './KillMap.tsx';
 import EventTimeline from './EventTimeline.tsx';
 import { Panel } from './ui.tsx';
 import { text } from './typography.ts';
-import { snapshotContent } from '../../content.ts';
+import { useContent } from '../../i18n/context.ts';
 import { formatTimestamp } from '../../services/format.ts';
 import type { SnapshotEvent } from '../../types/dataset.ts';
 
@@ -32,6 +32,7 @@ export default function MatchEventsSection({
   version,
   cutoffMinute,
 }: MatchEventsSectionProps) {
+  const snapshotContent = useContent().snapshot;
   const scrollRef = useRef<HTMLDivElement>(null);
   const [overflowing, setOverflowing] = useState(false);
 
@@ -46,19 +47,15 @@ export default function MatchEventsSection({
     return () => observer.disconnect();
   }, [events]);
 
-  // Derived only from the same list that is rendered below.
-  const eventSummary = `${events.length} ${
-    events.length === 1 ? 'event' : 'events'
-  } through ${formatTimestamp(cutoffMinute * 60_000)}`;
+  // Derived only from the same list that is rendered below. Pluralization is
+  // the bundle's job — joining fragments here would not survive translation.
+  const eventSummary = snapshotContent.eventSummary(
+    events.length,
+    formatTimestamp(cutoffMinute * 60_000)
+  );
 
   return (
-    <Panel
-      title={
-        snapshotContent.killMapTitle +
-        ' & ' +
-        snapshotContent.eventTimelineTitle
-      }
-    >
+    <Panel title={snapshotContent.mapAndTimelineTitle}>
       <div className="grid gap-5 lg:grid-cols-[340px_1fr]">
         <div>
           <SubHeading>{snapshotContent.killMapTitle}</SubHeading>

@@ -11,6 +11,7 @@ import type {
 import { loadSurveyDataset } from './services/surveyDataset.ts';
 import { selectSurveyCases } from './services/selectSurveyCases.ts';
 import { SubmissionError, submitSurvey } from './services/submitSurvey.ts';
+import LanguageSwitcher from './components/LanguageSwitcher.tsx';
 import ConsentStep from './steps/ConsentStep.tsx';
 import ParticipantStep from './steps/ParticipantStep.tsx';
 import InstructionsStep from './steps/InstructionsStep.tsx';
@@ -200,8 +201,15 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-abyss-950 text-slate-200">
-      <main className="mx-auto flex min-h-screen max-w-5xl items-start justify-center px-4 sm:px-6">
+    <div className="flex min-h-screen flex-col bg-abyss-950 text-slate-200">
+      {/* Thin chrome bar. Shares `main`'s max width and padding so the switcher
+          lines up with the content's right edge at every breakpoint, and sits
+          in normal flow rather than floating over the step title. */}
+      <header className="mx-auto flex w-full max-w-5xl justify-end px-4 pt-3 sm:px-6">
+        <LanguageSwitcher />
+      </header>
+
+      <main className="mx-auto flex w-full max-w-5xl flex-1 items-start justify-center px-4 sm:px-6">
         {step === Step.Consent && <ConsentStep onAccept={handleConsent} />}
 
         {step === Step.Participant && (

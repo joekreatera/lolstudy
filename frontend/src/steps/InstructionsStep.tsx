@@ -1,4 +1,4 @@
-import { instructionsContent } from '../content.ts';
+import { useContent } from '../i18n/context.ts';
 import StepContainer from '../components/StepContainer.tsx';
 import PrimaryButton from '../components/PrimaryButton.tsx';
 
@@ -16,6 +16,8 @@ export default function InstructionsStep({
   errorDetail,
   onStart,
 }: InstructionsStepProps) {
+  const instructionsContent = useContent().instructions;
+
   return (
     <StepContainer title={instructionsContent.title}>
       <div className="space-y-4 text-slate-300">
@@ -37,14 +39,12 @@ export default function InstructionsStep({
 
       <div className="mt-10">
         {datasetStatus === 'loading' && (
-          <p className="text-slate-400">Preparing the survey…</p>
+          <p className="text-slate-400">{instructionsContent.loadingLabel}</p>
         )}
 
         {datasetStatus === 'error' && (
           <div className="rounded-lg border border-red-900 bg-red-950/40 p-4 text-red-300">
-            <p>
-              We could not load the survey right now. Please try again later.
-            </p>
+            <p>{instructionsContent.loadErrorLabel}</p>
             {import.meta.env.DEV && errorDetail && (
               <p className="mt-2 font-mono text-xs text-red-500">
                 {errorDetail}

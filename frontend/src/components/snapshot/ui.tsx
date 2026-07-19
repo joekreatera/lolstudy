@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { snapshotContent } from '../../content.ts';
+import { useContent } from '../../i18n/context.ts';
 import type { TeamSide } from '../../types/dataset.ts';
 
 /** A dark dashboard panel with an optional compact section eyebrow. */
@@ -53,6 +53,7 @@ export function TeamTag({
   side: TeamSide;
   align?: 'left' | 'right';
 }) {
+  const snapshotContent = useContent().snapshot;
   const label =
     side === 'blue'
       ? snapshotContent.blueTeamLabel

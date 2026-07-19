@@ -1,4 +1,4 @@
-import { surveyContent, snapshotContent } from '../../content.ts';
+import { useContent } from '../../i18n/context.ts';
 import { platformLabel } from '../../services/assets.ts';
 import { formatTimestamp } from '../../services/format.ts';
 import { text } from './typography.ts';
@@ -20,6 +20,8 @@ export default function MatchContextHeader({
   questionNumber,
   totalQuestions,
 }: MatchContextHeaderProps) {
+  const content = useContent();
+  const snapshotContent = content.snapshot;
   const clock = formatTimestamp(metadata.cutoff_minute * 60_000);
 
   return (
@@ -33,14 +35,14 @@ export default function MatchContextHeader({
 
       <div className="text-right">
         <p className={text.sectionHeading}>
-          {surveyContent.progressLabel(questionNumber, totalQuestions)}
+          {content.survey.progressLabel(questionNumber, totalQuestions)}
         </p>
         <p className={`mt-0.5 ${text.helper}`}>
           {platformLabel(metadata.platform)}
           <span className="mx-1 text-slate-600" aria-hidden="true">
             ·
           </span>
-          Patch {metadata.patch}
+          {snapshotContent.patchLabel} {metadata.patch}
           <span className="mx-1 text-slate-600" aria-hidden="true">
             ·
           </span>

@@ -1,9 +1,9 @@
+import { useMemo } from 'react';
 import {
-  surveyContent,
-  snapshotContent,
-  winnerOptions,
-  confidenceOptions,
-} from '../../content.ts';
+  buildConfidenceOptions,
+  buildWinnerOptions,
+} from '../../content/index.ts';
+import { useContent } from '../../i18n/context.ts';
 import { TeamDot } from './ui.tsx';
 import PrimaryButton from '../PrimaryButton.tsx';
 import type { Confidence, PredictedWinner } from '../../types/submission.ts';
@@ -33,7 +33,17 @@ export default function PredictionPanel({
   isLast,
   fieldKey,
 }: PredictionPanelProps) {
+  const content = useContent();
+  const surveyContent = content.survey;
+  const snapshotContent = content.snapshot;
   const canConfirm = winner !== null && confidence !== null;
+
+  // Labels follow the language; `value` is always the literal payload value.
+  const winnerOptions = useMemo(() => buildWinnerOptions(content), [content]);
+  const confidenceOptions = useMemo(
+    () => buildConfidenceOptions(content),
+    [content]
+  );
 
   return (
     <section className="rounded-xl border border-abyss-600 bg-abyss-900 p-4 sm:p-5">
@@ -102,8 +112,8 @@ export default function PredictionPanel({
           })}
         </div>
         <div className="mt-1.5 flex justify-between text-[11px] text-slate-500">
-          <span>1 — Very unsure</span>
-          <span>5 — Very sure</span>
+          <span>{surveyContent.confidenceLowHint}</span>
+          <span>{surveyContent.confidenceHighHint}</span>
         </div>
       </fieldset>
 

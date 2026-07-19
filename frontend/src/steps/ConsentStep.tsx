@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { consentContent } from '../content.ts';
+import { useContent } from '../i18n/context.ts';
 import StepContainer from '../components/StepContainer.tsx';
 import PrimaryButton from '../components/PrimaryButton.tsx';
 
@@ -9,6 +9,7 @@ interface ConsentStepProps {
 
 export default function ConsentStep({ onAccept }: ConsentStepProps) {
   const [checked, setChecked] = useState(false);
+  const consentContent = useContent().consent;
 
   return (
     <StepContainer title={consentContent.title}>

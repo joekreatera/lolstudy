@@ -219,7 +219,11 @@ export interface SurveyDataset {
   cases: SurveyCase[];
 }
 
-/** Display order and labels for the five roles. */
+/**
+ * Display order for the five roles. The role LABELS are localized and live in
+ * the content bundles (`content/en.ts`, `content/es.ts`) — keeping a second
+ * English copy here would let the two drift.
+ */
 export const ROLE_ORDER: readonly RoleKey[] = [
   'TOP',
   'JUNGLE',
@@ -227,11 +231,3 @@ export const ROLE_ORDER: readonly RoleKey[] = [
   'BOTTOM',
   'UTILITY',
 ];
-
-export const ROLE_LABELS: Record<RoleKey, string> = {
-  TOP: 'Top',
-  JUNGLE: 'Jungle',
-  MIDDLE: 'Mid',
-  BOTTOM: 'Bot',
-  UTILITY: 'Support',
-};

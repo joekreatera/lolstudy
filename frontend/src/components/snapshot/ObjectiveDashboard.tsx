@@ -1,5 +1,5 @@
 import StatIcon, { type StatIconName } from './StatIcon.tsx';
-import { snapshotContent } from '../../content.ts';
+import { useContent } from '../../i18n/context.ts';
 import { text } from './typography.ts';
 import type { TeamState } from '../../types/dataset.ts';
 
@@ -26,22 +26,47 @@ export default function ObjectiveDashboard({
   blue,
   red,
 }: ObjectiveDashboardProps) {
+  const snapshotContent = useContent().snapshot;
+  const objectives = snapshotContent.objectives;
+
   const rows: ObjectiveRow[] = [
-    { icon: 'tower', label: 'Towers', blue: blue.towers, red: red.towers },
+    {
+      icon: 'tower',
+      label: objectives.towers,
+      blue: blue.towers,
+      red: red.towers,
+    },
     {
       icon: 'inhibitor',
-      label: 'Inhibitors',
+      label: objectives.inhibitors,
       blue: blue.inhibitors,
       red: red.inhibitors,
     },
-    { icon: 'dragon', label: 'Dragons', blue: blue.dragons, red: red.dragons },
-    { icon: 'herald', label: 'Heralds', blue: blue.heralds, red: red.heralds },
-    { icon: 'baron', label: 'Barons', blue: blue.barons, red: red.barons },
+    {
+      icon: 'dragon',
+      label: objectives.dragons,
+      blue: blue.dragons,
+      red: red.dragons,
+    },
+    {
+      icon: 'herald',
+      label: objectives.heralds,
+      blue: blue.heralds,
+      red: red.heralds,
+    },
+    {
+      icon: 'baron',
+      label: objectives.barons,
+      blue: blue.barons,
+      red: red.barons,
+    },
   ];
 
   return (
     <div>
-      <p className={`mb-2 ${text.metricLabel}`}>Objectives</p>
+      <p className={`mb-2 ${text.metricLabel}`}>
+        {snapshotContent.objectivesTitle}
+      </p>
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
         {rows.map((row) => (
           <div

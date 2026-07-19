@@ -1,7 +1,7 @@
 import PlayerCard from './PlayerCard.tsx';
 import MatchupDiff from './MatchupDiff.tsx';
 import { Panel, TeamTag } from './ui.tsx';
-import { snapshotContent } from '../../content.ts';
+import { useContent } from '../../i18n/context.ts';
 import {
   ROLE_ORDER,
   type ParticipantState,
@@ -48,6 +48,8 @@ export default function MatchupSection({
   roleMatchups,
   version,
 }: MatchupSectionProps) {
+  const snapshotContent = useContent().snapshot;
+
   return (
     <Panel title={snapshotContent.laneMatchupsTitle}>
       <div className="divide-y divide-abyss-800">

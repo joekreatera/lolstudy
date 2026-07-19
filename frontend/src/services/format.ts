@@ -7,28 +7,45 @@ export function formatNumber(value: number): string {
   return value.toLocaleString('en-US');
 }
 
-/** Queue labels. Both queues are always named explicitly in the UI. */
+/**
+ * Queue labels. Both queues are always named explicitly in the UI. "Solo/Duo"
+ * and "Flex" are the client's own names for these queues and read identically
+ * to Spanish-speaking players, so they are not translated.
+ */
 export const QUEUE_LABELS = { solo_duo: 'Solo/Duo', flex: 'Flex' } as const;
 
 export type QueueKey = keyof typeof QUEUE_LABELS;
 
-/** Shown when a whole rank lookup failed (defensive; absent from current data). */
-export const RANK_UNAVAILABLE_TEXT = 'Rank unavailable';
-
-/** Shown when the player has no entry in that specific ranked queue. */
-export const QUEUE_UNRANKED_TEXT = 'Unranked';
+/**
+ * The localized fragments these helpers need. Passed in rather than imported so
+ * this module stays a pure formatting layer with no opinion about language.
+ */
+export interface RankTextLabels {
+  /** Whole rank lookup failed (defensive; absent from current data). */
+  unavailable: string;
+  /** No entry in that specific ranked queue. */
+  unranked: string;
+  /** Wins abbreviation, e.g. "W" / "V". */
+  wins: string;
+  /** Losses abbreviation, e.g. "L" / "D". */
+  losses: string;
+}
 
 /**
  * One queue's standing as a neutral line:
  *   ranked   → "Emerald IV · 85 LP" / "Challenger · 3,155 LP"
- *   no entry → "Unranked"
+ *   no entry → the caller's "unranked" wording
  *
  * Always uses the upstream-normalized `display`, which correctly omits the
- * division for apex tiers ("Master", not "Master I"). Never derives a tier
- * ordering, comparison, or aggregate.
+ * division for apex tiers ("Master", not "Master I"). Tier names come from the
+ * dataset and stay in English in every language — they are proper nouns. Never
+ * derives a tier ordering, comparison, or aggregate.
  */
-export function formatQueueRank(queueRank: QueueRank | null): string {
-  if (!queueRank) return QUEUE_UNRANKED_TEXT;
+export function formatQueueRank(
+  queueRank: QueueRank | null,
+  labels: RankTextLabels
+): string {
+  if (!queueRank) return labels.unranked;
   return `${queueRank.display} · ${formatNumber(queueRank.lp)} LP`;
 }
 
@@ -37,9 +54,15 @@ export function formatQueueRank(queueRank: QueueRank | null): string {
  * Returns null when there is no ranked entry — a missing record is never
  * rendered as "W: 0 · L: 0". No rate, ratio, or total is ever computed.
  */
-export function formatQueueRecord(queueRank: QueueRank | null): string | null {
+export function formatQueueRecord(
+  queueRank: QueueRank | null,
+  labels: RankTextLabels
+): string | null {
   if (!queueRank) return null;
-  return `W: ${formatNumber(queueRank.wins)} · L: ${formatNumber(queueRank.losses)}`;
+  return (
+    `${labels.wins}: ${formatNumber(queueRank.wins)} · ` +
+    `${labels.losses}: ${formatNumber(queueRank.losses)}`
+  );
 }
 
 /**
@@ -54,9 +77,13 @@ export function formatQueueLabel(queue: QueueKey): string {
  * Text for one queue row when the whole lookup is unavailable vs. per-queue.
  * Kept here so no component re-implements the rank/unranked wording.
  */
-export function formatQueueStanding(rank: PublicRank, queue: QueueKey): string {
-  if (!rank.available) return RANK_UNAVAILABLE_TEXT;
-  return formatQueueRank(rank[queue]);
+export function formatQueueStanding(
+  rank: PublicRank,
+  queue: QueueKey,
+  labels: RankTextLabels
+): string {
+  if (!rank.available) return labels.unavailable;
+  return formatQueueRank(rank[queue], labels);
 }
 
 /**

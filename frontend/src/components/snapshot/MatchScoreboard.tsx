@@ -1,4 +1,4 @@
-import { snapshotContent } from '../../content.ts';
+import { useContent } from '../../i18n/context.ts';
 import { formatNumber, formatSigned } from '../../services/format.ts';
 import StatIcon, { type StatIconName } from './StatIcon.tsx';
 import { TeamTag } from './ui.tsx';
@@ -35,13 +35,15 @@ export default function MatchScoreboard({
   red,
   diffs,
 }: MatchScoreboardProps) {
+  const snapshotContent = useContent().snapshot;
+  const metrics = snapshotContent.metrics;
   const kda = (t: TeamState) => `${t.kills} / ${t.deaths} / ${t.assists}`;
 
   const rows: MetricRow[] = [
     {
       key: 'gold',
       icon: 'gold',
-      label: 'Gold',
+      label: metrics.gold,
       blue: formatNumber(blue.gold),
       red: formatNumber(red.gold),
       delta: formatSigned(diffs.gold_blue_minus_red),
@@ -50,8 +52,8 @@ export default function MatchScoreboard({
     {
       key: 'kda',
       icon: 'kda',
-      label: 'K / D / A',
-      srLabel: 'Kills, deaths, assists',
+      label: metrics.kda,
+      srLabel: metrics.kdaSrLabel,
       blue: kda(blue),
       red: kda(red),
       delta: null,
@@ -60,8 +62,8 @@ export default function MatchScoreboard({
     {
       key: 'cs',
       icon: 'cs',
-      label: 'CS',
-      srLabel: 'Creep score',
+      label: metrics.cs,
+      srLabel: metrics.csSrLabel,
       blue: formatNumber(blue.cs),
       red: formatNumber(red.cs),
       delta: formatSigned(diffs.cs_blue_minus_red),
@@ -70,8 +72,8 @@ export default function MatchScoreboard({
     {
       key: 'level',
       icon: 'level',
-      label: 'Avg level',
-      srLabel: 'Average level',
+      label: metrics.avgLevel,
+      srLabel: metrics.avgLevelSrLabel,
       blue: blue.avg_level.toFixed(1),
       red: red.avg_level.toFixed(1),
       delta: formatSigned(diffs.avg_level_blue_minus_red, 1),

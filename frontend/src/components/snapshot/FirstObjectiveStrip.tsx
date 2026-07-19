@@ -1,6 +1,6 @@
 import { TeamDot } from './ui.tsx';
 import { text } from './typography.ts';
-import { snapshotContent } from '../../content.ts';
+import { useContent } from '../../i18n/context.ts';
 import type { TeamSide, TeamState } from '../../types/dataset.ts';
 
 interface FirstObjectiveStripProps {
@@ -17,6 +17,8 @@ export default function FirstObjectiveStrip({
   blue,
   red,
 }: FirstObjectiveStripProps) {
+  const snapshotContent = useContent().snapshot;
+
   const pills: { label: string; owner: TeamSide | null }[] = [
     {
       label: snapshotContent.firstBloodLabel,

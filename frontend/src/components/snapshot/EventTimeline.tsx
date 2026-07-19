@@ -1,4 +1,4 @@
-import { snapshotContent } from '../../content.ts';
+import { useContent } from '../../i18n/context.ts';
 import { championDisplayName } from '../../services/assets.ts';
 import { formatTimestamp } from '../../services/format.ts';
 import StatIcon, { type StatIconName } from './StatIcon.tsx';
@@ -17,14 +17,21 @@ const EVENT_ICON: Record<SnapshotEvent['type'], StatIconName> = {
   herald: 'herald',
 };
 
-/** Assist suffix, only when present and not already in the description. */
-function assistText(event: SnapshotEvent): string | null {
+/**
+ * Assist suffix, only when present and not already in the description. Only
+ * the leading label is localized — the champion names after it are dataset
+ * values and are never translated.
+ *
+ * The `/assist/i` guard reads the dataset's own English description, which is
+ * language-independent, so the suffix appears or not identically in both.
+ */
+function assistText(event: SnapshotEvent, label: string): string | null {
   if (
     event.type === 'champion_kill' &&
     event.assist_champions.length > 0 &&
     !/assist/i.test(event.description)
   ) {
-    return `Assists: ${event.assist_champions.map(championDisplayName).join(', ')}`;
+    return `${label}: ${event.assist_champions.map(championDisplayName).join(', ')}`;
   }
   return null;
 }
@@ -37,6 +44,8 @@ function assistText(event: SnapshotEvent): string | null {
  * Single column at every width so the sequence stays unambiguous.
  */
 export default function EventTimeline({ events }: EventTimelineProps) {
+  const snapshotContent = useContent().snapshot;
+
   if (events.length === 0) {
     return (
       <p className="text-sm text-slate-400">{snapshotContent.noEventsLabel}</p>
@@ -48,7 +57,7 @@ export default function EventTimeline({ events }: EventTimelineProps) {
   return (
     <ul className="divide-y divide-abyss-800">
       {sorted.map((event, index) => {
-        const assists = assistText(event);
+        const assists = assistText(event, snapshotContent.assistsLabel);
         return (
           <li key={index} className="flex items-start gap-2.5 py-1 text-sm">
             <span className="w-10 shrink-0 pt-px text-right font-mono text-xs tabular-nums text-slate-400">

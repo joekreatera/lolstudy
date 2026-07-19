@@ -1,5 +1,5 @@
 import ItemIcon from './ItemIcon.tsx';
-import { snapshotContent } from '../../content.ts';
+import { useContent } from '../../i18n/context.ts';
 import type { ItemEntry } from '../../types/dataset.ts';
 
 interface ItemTrayProps {
@@ -23,6 +23,7 @@ export default function ItemTray({
   version,
   align = 'left',
 }: ItemTrayProps) {
+  const snapshotContent = useContent().snapshot;
   const justify =
     align === 'right' ? 'justify-start sm:justify-end' : 'justify-start';
 

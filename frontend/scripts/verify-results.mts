@@ -14,9 +14,18 @@ import assert from 'node:assert/strict';
 import {
   CASES_PER_PARTICIPANT,
   CONSENT_VERSION,
+  CONTENT,
   SURVEY_PROTOCOL_VERSION,
+  buildConfidenceOptions,
+  buildParticipantQuestions,
+  buildWinnerOptions,
   participantQuestions,
 } from '../src/content.ts';
+import {
+  LANGUAGES,
+  isLanguage,
+  languageFromLocales,
+} from '../src/i18n/language.ts';
 import { SubmissionError } from '../src/services/submitSurvey.ts';
 import type {
   QuestionResult,
@@ -99,9 +108,127 @@ check('all five participant questions are present', () => {
   );
 });
 
+console.log('\nLocalization: browser-language detection');
+
+check('any Spanish locale resolves to Spanish', () => {
+  for (const tag of ['es', 'es-MX', 'es-ES', 'es-AR', 'es-419', 'ES-mx']) {
+    assert.equal(languageFromLocales([tag]), 'es', `${tag} should be Spanish`);
+  }
+});
+
+check('non-Spanish locales resolve to English or fall through', () => {
+  assert.equal(languageFromLocales(['en-US']), 'en');
+  assert.equal(languageFromLocales(['en']), 'en');
+  // Unsupported languages express no opinion; the caller falls back to English.
+  assert.equal(languageFromLocales(['fr-FR']), null);
+  assert.equal(languageFromLocales([]), null);
+});
+
+check('the most-preferred supported locale wins, not the first Spanish one', () => {
+  // Regression guard: an English-primary browser that also lists Spanish must
+  // stay English. Recognizing only Spanish here would skip past 'en-US'.
+  assert.equal(languageFromLocales(['en-US', 'es-MX', 'es-ES']), 'en');
+  assert.equal(languageFromLocales(['es-MX', 'en-US']), 'es');
+  // An unsupported first choice is skipped rather than forcing English.
+  assert.equal(languageFromLocales(['fr-FR', 'es-MX']), 'es');
+  assert.equal(languageFromLocales(['fr-FR', 'en-GB']), 'en');
+});
+
+check('only en and es are accepted as stored values', () => {
+  assert.ok(isLanguage('en'));
+  assert.ok(isLanguage('es'));
+  for (const bad of ['', 'fr', 'EN', 'es-MX', null, undefined, 0, {}]) {
+    assert.ok(!isLanguage(bad), `${String(bad)} should be rejected`);
+  }
+});
+
+console.log('\nLocalization: display language never changes stored values');
+
+/**
+ * The point of the value spine in `content/schema.ts`: a translation may change
+ * every label on screen but must not move a single value that reaches the API.
+ * These checks compare the two languages structurally rather than trusting it.
+ */
+check('every language builds the same questions in the same order', () => {
+  for (const language of LANGUAGES) {
+    assert.deepEqual(
+      buildParticipantQuestions(CONTENT[language]).map((q) => q.key),
+      participantQuestions.map((q) => q.key),
+      `${language} question order differs`
+    );
+  }
+});
+
+check('every language builds identical option values per question', () => {
+  for (const language of LANGUAGES) {
+    const localized = buildParticipantQuestions(CONTENT[language]);
+    for (const [i, question] of localized.entries()) {
+      assert.deepEqual(
+        question.options.map((o) => o.value),
+        participantQuestions[i].options.map((o) => o.value),
+        `${language} ${question.key} option values differ`
+      );
+    }
+  }
+});
+
+check('every language supplies a non-empty label for every option', () => {
+  for (const language of LANGUAGES) {
+    for (const question of buildParticipantQuestions(CONTENT[language])) {
+      assert.ok(question.question.trim(), `${language} ${question.key} legend`);
+      for (const option of question.options) {
+        assert.ok(
+          option.label.trim(),
+          `${language} ${question.key}/${option.value} has no label`
+        );
+      }
+    }
+  }
+});
+
+check('predicted-winner values stay blue/red in every language', () => {
+  for (const language of LANGUAGES) {
+    assert.deepEqual(
+      buildWinnerOptions(CONTENT[language]).map((o) => o.value),
+      ['blue', 'red'],
+      `${language} winner values differ`
+    );
+  }
+});
+
+check('confidence values stay 1..5 in every language', () => {
+  for (const language of LANGUAGES) {
+    assert.deepEqual(
+      buildConfidenceOptions(CONTENT[language]).map((o) => o.value),
+      [1, 2, 3, 4, 5],
+      `${language} confidence values differ`
+    );
+  }
+});
+
+check('translated labels actually differ from English', () => {
+  // Guards against a bundle that type-checks because it was copied wholesale.
+  const enQuestions = buildParticipantQuestions(CONTENT.en);
+  const esQuestions = buildParticipantQuestions(CONTENT.es);
+  const changed = esQuestions.filter(
+    (q, i) => q.question !== enQuestions[i].question
+  );
+  assert.equal(changed.length, esQuestions.length, 'some legends untranslated');
+  assert.notEqual(CONTENT.es.consent.title, CONTENT.en.consent.title);
+  assert.notEqual(CONTENT.es.survey.winnerLabels.blue, 'Blue Team');
+});
+
 console.log('\nVersion constants');
 
 check('protocol and consent versions are set', () => {
+  assert.equal(SURVEY_PROTOCOL_VERSION, 'final_feedback_v1');
+  assert.equal(CONSENT_VERSION, 'v2');
+});
+
+check('a translation does not change the stored protocol or consent version', () => {
+  // Translating the consent text is not a new consent: same protocol, same
+  // wording, another language. If that judgement ever changes, CONSENT_VERSION
+  // must be bumped deliberately — this check exists to force that decision.
   assert.equal(SURVEY_PROTOCOL_VERSION, 'final_feedback_v1');
   assert.equal(CONSENT_VERSION, 'v2');
 });

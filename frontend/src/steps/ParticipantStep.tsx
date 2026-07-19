@@ -1,5 +1,6 @@
-import { useState } from 'react';
-import { participantContent, participantQuestions } from '../content.ts';
+import { useMemo, useState } from 'react';
+import { buildParticipantQuestions } from '../content/index.ts';
+import { useContent } from '../i18n/context.ts';
 import type { ParticipantAnswers } from '../types/submission.ts';
 import StepContainer from '../components/StepContainer.tsx';
 import RadioGroup from '../components/RadioGroup.tsx';
@@ -13,6 +14,15 @@ type Draft = Record<string, string | undefined>;
 
 export default function ParticipantStep({ onComplete }: ParticipantStepProps) {
   const [draft, setDraft] = useState<Draft>({});
+  const content = useContent();
+
+  // Rebuilt when the language changes, but only the labels differ: the keys
+  // and option values come from the schema, so `draft` — which stores values —
+  // stays valid across a switch and no answer is lost.
+  const participantQuestions = useMemo(
+    () => buildParticipantQuestions(content),
+    [content]
+  );
 
   const allAnswered = participantQuestions.every((q) => draft[q.key]);
 
@@ -35,7 +45,7 @@ export default function ParticipantStep({ onComplete }: ParticipantStepProps) {
   };
 
   return (
-    <StepContainer title={participantContent.title}>
+    <StepContainer title={content.participant.title}>
       <div className="space-y-10">
         {participantQuestions.map((q) => (
           <RadioGroup
@@ -51,7 +61,7 @@ export default function ParticipantStep({ onComplete }: ParticipantStepProps) {
 
       <div className="mt-10">
         <PrimaryButton onClick={submit} disabled={!allAnswered}>
-          {participantContent.submitLabel}
+          {content.participant.submitLabel}
         </PrimaryButton>
       </div>
     </StepContainer>
