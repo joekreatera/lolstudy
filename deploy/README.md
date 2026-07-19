@@ -11,7 +11,8 @@ built locally and shipped through Git.
 |---|---|
 | Repo on server | `/home/deployer/lolstudy` (already cloned) |
 | Domain | `esportsresearch.quest`, `www.esportsresearch.quest` |
-| Static root | `/home/deployer/lolstudy/frontend/dist` |
+| Build source | `/home/deployer/lolstudy/frontend/dist` (in Git) |
+| Static root | `/var/www/lolstudy` (published by rsync, public) |
 | API | uvicorn on `127.0.0.1:8000`, behind Nginx `/api/` |
 | Process model | GNU `screen`, started by hand (no systemd) |
 | Database | local PostgreSQL 16 |
@@ -203,7 +204,46 @@ curl -s http://127.0.0.1:8000/api/health     # -> {"status":"ok"}
 
 ---
 
-## 9. Nginx
+## 9. Publish the frontend to the public static root
+
+Nginx does **not** serve the repository checkout. Its workers run as
+`www-data`, and `/home/deployer` is mode `750` owned by `deployer:deployer`, so
+`www-data` cannot traverse into it — serving from the repo returns 403 on every
+request. The build is published to `/var/www/lolstudy` instead.
+
+```bash
+sudo mkdir -p /var/www/lolstudy
+sudo rsync -a --delete /home/deployer/lolstudy/frontend/dist/ /var/www/lolstudy/
+sudo chown -R root:www-data /var/www/lolstudy
+sudo find /var/www/lolstudy -type d -exec chmod 755 {} \;
+sudo find /var/www/lolstudy -type f -exec chmod 644 {} \;
+```
+
+The trailing slash on `dist/` copies the *contents*, not the directory itself.
+`--delete` removes anything in the destination that is no longer in the build,
+which is what keeps the static root clean across redeploys.
+
+**`/var/www/lolstudy` must contain only the public frontend build.** Never
+place backend code, `.env`, `backend/data/case_outcomes.json`, CSV exports, or
+`.git` under it. Because the source is `frontend/dist` — which contains only
+`index.html`, hashed `assets/`, `rank-emblems/`, and the label-free
+`survey_cases.json` — a plain `rsync --delete` from that directory cannot carry
+anything private across.
+
+Verify what landed:
+
+```bash
+find /var/www/lolstudy -type f | sed "s|/var/www/lolstudy/||" | sort
+find /var/www/lolstudy \( -name ".env" -o -name "*.csv" -o -name "case_outcomes.json" \) | wc -l   # -> 0
+test -d /var/www/lolstudy/.git && echo "BAD: git metadata present" || echo "no git metadata"
+```
+
+**Rollback:** the static root is disposable — re-run the `rsync` from any
+checkout of the desired commit.
+
+---
+
+## 10. Nginx
 
 ```bash
 sudo cp /home/deployer/lolstudy/deploy/nginx.conf \
@@ -226,7 +266,7 @@ No certbot run is needed.
 
 ---
 
-## 10. Smoke test
+## 11. Smoke test
 
 ```bash
 curl -s  https://esportsresearch.quest/api/health          # {"status":"ok"}
@@ -242,7 +282,7 @@ summary appears **only after** submission succeeds.
 
 ---
 
-## 11. Research export (later, on demand)
+## 12. Research export (later, on demand)
 
 ```bash
 cd /home/deployer/lolstudy/backend
@@ -301,5 +341,6 @@ The survey database and role can stay; they do not affect the demo.
 7. `alembic upgrade head`
 8. Import outcomes, verify counts, **shred the artifact**
 9. Start uvicorn on `127.0.0.1:8000`
-10. Nginx `-t`, then reload
-11. Smoke test, then a full survey run
+10. Publish `frontend/dist` to `/var/www/lolstudy` via rsync
+11. Nginx `-t`, then reload
+12. Smoke test, then a full survey run

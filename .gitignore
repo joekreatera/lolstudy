@@ -83,8 +83,9 @@ Thumbs.db
 # edit) would otherwise sweep them up.
 # =============================================================================
 
-# The built frontend that Nginx serves from
-# /home/deployer/lolstudy/frontend/dist.
+# The built frontend. This is the deployment SOURCE, not the served directory:
+# it is published to /var/www/lolstudy with rsync, because Nginx runs as
+# www-data and cannot traverse /home/deployer (mode 750). See deploy/nginx.conf.
 !frontend/dist/
 !frontend/dist/**
 
