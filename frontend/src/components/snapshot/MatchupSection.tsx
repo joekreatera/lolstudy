@@ -1,6 +1,6 @@
 import PlayerCard from './PlayerCard.tsx';
 import MatchupDiff from './MatchupDiff.tsx';
-import { Panel } from './ui.tsx';
+import { Panel, TeamTag } from './ui.tsx';
 import { snapshotContent } from '../../content.ts';
 import {
   ROLE_ORDER,
@@ -27,9 +27,16 @@ function findParticipant(
 
 /**
  * The five lane matchups. Each row is a mirrored player comparison — Blue card
- * left, Red card right, role + neutral differences in the center. On mobile
- * the center strip stacks above the two side-by-side cards (Blue/Red stay
- * paired, never all-Blue-then-all-Red).
+ * left, Red card right, role + neutral differences in the center.
+ *
+ * Below `sm` the row is a single column: the center strip first, then the Blue
+ * card, then the Red card. Two side-by-side cards left each one only ~125px at
+ * 320px wide, and a 56px portrait inside that leaves a ~59px stats column for a
+ * Gold/CS cluster needing ~122px — so both cards overflowed into each other and
+ * Blue's numbers were painted over Red's. Stacking gives each card the full
+ * row width; the pair still reads as one matchup because the role strip heads
+ * it and each card is tagged with its team. Blue/Red stay paired per lane,
+ * never all-Blue-then-all-Red.
  */
 export default function MatchupSection({
   participants,
@@ -42,12 +49,18 @@ export default function MatchupSection({
         {ROLE_ORDER.map((role) => (
           <div
             key={role}
-            className="grid grid-cols-2 items-center gap-x-3 gap-y-2 py-3 sm:grid-cols-[1fr_8rem_1fr]"
+            className="grid grid-cols-1 items-center gap-x-3 gap-y-2 py-3 sm:grid-cols-[1fr_8rem_1fr]"
           >
-            <div className="col-span-2 sm:order-2 sm:col-span-1">
+            <div className="sm:order-2">
               <MatchupDiff role={role} diffs={roleMatchups[role]?.diffs} />
             </div>
             <div className="sm:order-1">
+              {/* Stacked cards lose the left/right cue that identifies a side,
+                  so each card states its team outright. Hidden from `sm` up,
+                  where position and the portrait ring already carry it. */}
+              <div className="mb-1 sm:hidden">
+                <TeamTag side="blue" align="left" />
+              </div>
               <PlayerCard
                 player={findParticipant(participants, 'blue', role)}
                 version={version}
@@ -55,6 +68,9 @@ export default function MatchupSection({
               />
             </div>
             <div className="sm:order-3">
+              <div className="mb-1 flex justify-end sm:hidden">
+                <TeamTag side="red" align="right" />
+              </div>
               <PlayerCard
                 player={findParticipant(participants, 'red', role)}
                 version={version}

@@ -71,8 +71,11 @@ export default function PlayerCard({ player, version, side }: PlayerCardProps) {
         {player.kills} / {player.deaths} / {player.assists}
         <span className="sr-only"> kills, deaths, assists</span>
       </p>
+      {/* Wraps rather than overflowing: Gold and CS together need ~122px, and
+          a narrow card must be free to put CS on a second line instead of
+          spilling the numbers outside the card and over the opposing side. */}
       <div
-        className={`mt-1 flex items-baseline gap-3 ${
+        className={`mt-1 flex flex-wrap items-baseline gap-x-3 gap-y-0.5 ${
           isBlue ? 'justify-start' : 'justify-end'
         }`}
       >

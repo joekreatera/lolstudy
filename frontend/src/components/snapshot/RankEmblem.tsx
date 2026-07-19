@@ -19,12 +19,12 @@ interface RankEmblemProps {
  * replaced by a broken-image placeholder. Every tier gets the identical box,
  * spacing, and opacity — no tier-based sizing, glow, border, or background.
  *
- * Hidden below `sm`: a lane column is only ~125px at 320px wide, and two queue
- * rows with emblems would leave too little room for the queue label, tier, LP
- * and W/L. The rank text is the actual experimental input — losing any of it
- * would show the participant less than the LLM receives from the same snapshot
- * — while the emblem only repeats the tier the text already states, so the
- * emblem is what gives way.
+ * Hidden below `sm`, where MatchupSection stacks the two cards and the rank
+ * text already wraps to fill the row: the emblem only repeats the tier that
+ * text states, so dropping it costs no experimental information while keeping
+ * the two queue rows compact on a phone. The rank text is the actual input —
+ * losing any of it would show the participant less than the LLM receives from
+ * the same snapshot — so the emblem is what gives way.
  */
 export default function RankEmblem({ queueRank }: RankEmblemProps) {
   const [failed, setFailed] = useState(false);
