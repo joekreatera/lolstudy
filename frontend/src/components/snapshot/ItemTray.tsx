@@ -5,7 +5,11 @@ import type { ItemEntry } from '../../types/dataset.ts';
 interface ItemTrayProps {
   inventory: ItemEntry[];
   version: string;
-  /** Alignment of the tray for mirrored player cards. */
+  /**
+   * Alignment of the tray for mirrored player cards. `right` only takes effect
+   * from `sm` up: below it the cards stack and both sides align left, matching
+   * the rest of PlayerCard.
+   */
   align?: 'left' | 'right';
 }
 
@@ -19,7 +23,8 @@ export default function ItemTray({
   version,
   align = 'left',
 }: ItemTrayProps) {
-  const justify = align === 'right' ? 'justify-end' : 'justify-start';
+  const justify =
+    align === 'right' ? 'justify-start sm:justify-end' : 'justify-start';
 
   if (inventory.length === 0) {
     return (

@@ -30,7 +30,12 @@ interface PlayerCardProps {
  */
 export default function PlayerCard({ player, version, side }: PlayerCardProps) {
   const isBlue = side === 'blue';
-  const alignText = isBlue ? 'text-left' : 'text-right';
+  /* Mirroring is a `sm`-and-up affair. Stacked on a phone, a right-aligned Red
+     card under a left-aligned Blue one makes the eye zig-zag down the column,
+     so below `sm` both sides align left and the row reads straight down. From
+     `sm` up the cards sit side by side again and Red mirrors as before. */
+  const alignText = isBlue ? 'text-left' : 'text-left sm:text-right';
+  const justify = isBlue ? 'justify-start' : 'justify-start sm:justify-end';
 
   if (!player) {
     if (import.meta.env.DEV) {
@@ -38,7 +43,7 @@ export default function PlayerCard({ player, version, side }: PlayerCardProps) {
     }
     return (
       <div
-        className={`flex min-h-24 items-center ${isBlue ? 'justify-start' : 'justify-end'} text-sm text-slate-500`}
+        className={`flex min-h-24 items-center ${justify} text-sm text-slate-500`}
       >
         {snapshotContent.playerUnavailableLabel}
       </div>
@@ -75,9 +80,7 @@ export default function PlayerCard({ player, version, side }: PlayerCardProps) {
           a narrow card must be free to put CS on a second line instead of
           spilling the numbers outside the card and over the opposing side. */}
       <div
-        className={`mt-1 flex flex-wrap items-baseline gap-x-3 gap-y-0.5 ${
-          isBlue ? 'justify-start' : 'justify-end'
-        }`}
+        className={`mt-1 flex flex-wrap items-baseline gap-x-3 gap-y-0.5 ${justify}`}
       >
         <span className="flex items-baseline gap-1">
           <span className={text.metricLabel}>Gold</span>
@@ -98,7 +101,7 @@ export default function PlayerCard({ player, version, side }: PlayerCardProps) {
   return (
     <div>
       <div
-        className={`flex items-start gap-2.5 ${isBlue ? '' : 'flex-row-reverse'}`}
+        className={`flex items-start gap-2.5 ${isBlue ? '' : 'sm:flex-row-reverse'}`}
       >
         {portrait}
         {stats}
@@ -121,15 +124,11 @@ export default function PlayerCard({ player, version, side }: PlayerCardProps) {
           return (
             <div
               key={queue}
-              className={`flex min-h-5 items-center gap-1.5 sm:min-h-8 ${
-                isBlue ? 'justify-start' : 'justify-end'
-              }`}
+              className={`flex min-h-5 items-center gap-1.5 sm:min-h-8 ${justify}`}
             >
               <RankEmblem queueRank={queueRank} />
               <span
-                className={`min-w-0 text-xs font-medium text-slate-300 sm:text-sm ${
-                  isBlue ? 'text-left' : 'text-right'
-                }`}
+                className={`min-w-0 text-xs font-medium text-slate-300 sm:text-sm ${alignText}`}
               >
                 <span className="text-slate-400">
                   {formatQueueLabel(queue)}
@@ -137,10 +136,18 @@ export default function PlayerCard({ player, version, side }: PlayerCardProps) {
                 <span className="tabular-nums">
                   {formatQueueStanding(player.rank, queue)}
                 </span>
+                {/* Standing and record are one sentence on desktop, but together
+                    they run past a phone's width and wrap at whatever word
+                    happens to land on the edge. Below `sm` the record drops to
+                    its own line so the break falls on the seam that means
+                    something: standing, then W/L. The separating space is a
+                    trailing space on the first line there, so it costs nothing;
+                    from `sm` up it re-inlines and reads exactly as before.
+                    Unranked queues have no record and are untouched. */}
                 {record && (
                   <>
                     {' '}
-                    <span className="whitespace-nowrap tabular-nums">
+                    <span className="block whitespace-nowrap tabular-nums sm:inline">
                       {record}
                     </span>
                   </>

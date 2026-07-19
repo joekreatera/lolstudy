@@ -104,6 +104,7 @@ export const snapshotContent = {
   eventTimelineTitle: 'Event timeline',
   blueTeamLabel: 'Blue Team',
   redTeamLabel: 'Red Team',
+  versusLabel: 'VS',
   deltaExplanation: 'Δ = Blue − Red',
   firstObjectivesTitle: 'First objectives',
   firstBloodLabel: 'First blood',
